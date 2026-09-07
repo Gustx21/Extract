@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 
-const URI = 'http://localhost:5000/processar';
+const DEBUG = import.meta.env.VITE_DEBUG === 'true';
+const URI = DEBUG ? import.meta.env['VITE_URI_LOCAL'] : import.meta.env['VITE_URI_DEPLOY'];
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -47,14 +48,25 @@ function App() {
     formData.append('formato', format);
 
     try {
-      const response = await fetch(URI, {
+      const response = await fetch(URI + "/processar", {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.erro || 'Erro ao processar o arquivo');
+        const errorText = await response.text();
+        let errorMessage = 'Erro ao processar o arquivo';
+        
+        try {
+          // Se o servidor realmente mandou um JSON de erro, tentamos parsear
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.erro || errorJson.message || errorMessage;
+        } catch {
+          // Se não for JSON (veio vazio ou texto puro), usamos o texto ou o status
+          errorMessage = errorText || `Erro no servidor (Status: ${response.status})`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const blob = await response.blob();

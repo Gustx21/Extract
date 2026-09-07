@@ -1,13 +1,17 @@
 from flask import Flask, request, send_file, jsonify
+from dotenv import load_dotenv
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import io
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-PORT = 5000
+load_dotenv()
+
+PORT = os.getenv("PORT")
 
 def tratar_colunas(cols, prefixo):
     """
@@ -118,7 +122,7 @@ def processar_arquivo(file, extensao):
     return df_final
 
 @app.route('/processar', methods=['POST'])
-def api_process_file():
+def api_processar_arquivo():
     if 'file' not in request.files:
         return jsonify({"erro": "Nenhum arquivo enviado"}), 400
     
