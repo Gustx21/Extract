@@ -1,5 +1,4 @@
 from flask import Flask, request, send_file, jsonify
-from dotenv import load_dotenv
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -9,9 +8,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-load_dotenv()
-
-PORT = os.getenv("PORT")
 
 def tratar_colunas(cols, prefixo):
     """
@@ -176,4 +172,5 @@ def api_processar_arquivo():
         return jsonify({"erro": str(e)}), 500
     
 if __name__ == "__main__":
-    app.run(debug=True, port=PORT)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", debug=True, port=port)
